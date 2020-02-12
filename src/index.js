@@ -3,18 +3,12 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 // Square 컴포넌트는 <button>을 렌더링
-class Square extends React.Component {
-  // Square는 게임의 상태를 유지할 필요가 없기 때문에 constructor를 삭제
-  render() {
-    return (
-      <button
-        className="square"
-        onClick={() => this.props.onClick()}  // Square를 클릭하면 Board에서 넘겨받은 onClick 함수가 호출. Square를 클릭하면 this.handleClick(i)를 호출한다.
-      >
-        {this.props.value}
-      </button>
-    );
-  }
+function Square(props) {
+  return (
+    <button className="square" onClick={props.onClick}>  {/* Square를 클릭하면 Board에서 넘겨받은 onClick 함수가 호출. Square를 클릭하면 this.handleClick(i)를 호출한다. */}
+      {props.value}
+    </button>
+  );
 }
 
 // Board 컴포넌트는 사각형 9개를 렌더링
