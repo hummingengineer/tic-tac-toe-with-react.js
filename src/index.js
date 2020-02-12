@@ -4,29 +4,47 @@ import './index.css';
 
 // Square 컴포넌트는 <button>을 렌더링
 class Square extends React.Component {
-  // 무언가를 "기억하기"위해 component는 state를 사용. 클래스에 생성자를 추가하여 state를 초기화. this.state는 정의된 React 컴포넌트에 대해 비공개로 간주해야 한다.
-  // JavaScript 클래스에서 하위 클래스의 생성자를 정의할 때 항상 super를 호출해야합니다. 모든 React 컴포넌트 클래스는 생성자를 가질 때 super(props) 호출 구문부터 작성해야 한다.
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: null,
-    };
-  }
+  // Square는 게임의 상태를 유지할 필요가 없기 때문에 constructor를 삭제
   render() {
     return (
-    // Square의 render 함수 내부에서 onClick 핸들러를 통해 this.setState를 호출하는 것으로 React에게 <button>을 클릭할 때 Square가 다시 렌더링해야 한다고 알리게 된다.
-    // 컴포넌트에서 setState를 호출하면 React는 자동으로 컴포넌트 내부의 자식 컴포넌트 역시 업데이트 한다.
-    <button className="square" onClick={() => this.setState({value: 'X'})}>  {/* onClick prop으로 함수를 전달. Square 컴포넌트를 클릭하면 "X"가 체크되도록 만듬. */}
-        {this.state.value}  {/* 부모 Board 컴포넌트에서 자식 Square 컴포넌트로 prop을 전달 */}
+      <button
+        className="square"
+        onClick={() => this.props.onClick()}  // Square를 클릭하면 Board에서 넘겨받은 onClick 함수가 호출. Square를 클릭하면 this.handleClick(i)를 호출한다.
+      >
+        {this.props.value}
       </button>
     );
   }
 }
 
 // Board 컴포넌트는 사각형 9개를 렌더링
+// 각 Square가 아닌 부모 Board 컴포넌트에 게임의 상태를 저장하는 것이 가장 좋은 방법
+// Board 컴포넌트는 각 Square에게 prop을 전달하는 것으로 무엇을 표시할 지 알려준다.
+// 여러개의 자식으로부터 데이터를 모으거나 두 개의 자식 컴포넌트들이 서로 통신하게 하려면 부모 컴포넌트에 공유 state를 정의해야 한다.
+// 부모 컴포넌트는 props를 사용하여 자식 컴포넌트에 state를 다시 전달할 수 있고, 이것은 자식 컴포넌트들이 서로 또는 부모 컴포넌트와 동기화 하도록 만든다.
+// 상태 관리를 부모 컴포넌트에서 하도록 한다.
 class Board extends React.Component {
+  // 9개의 사각형에 해당하는 9개의 null 배열을 초기 state로 설정
+  constructor(props) {
+    super(props);
+    this.state = {
+      squares: Array(9).fill(null),
+    };
+  }
+
+  handleClick(i) {
+    const squares = this.state.squares.slice();    // .slice()를 호출하는 것으로 기존 배열을 수정하지 않고 squares 배열의 복사본을 생성하여 수정
+    squares[i] = 'X';
+    this.setState({squares: squares})
+  }
+
   renderSquare(i) {
-    return <Square value={i} />;  // Board 컴포넌트에서 Square 컴포넌트로 value prop을 전달.
+    return (                                       // Board 컴포넌트에서 Square 컴포넌트로 value prop을 전달.
+      <Square
+        value={this.state.squares[i]}              // Square는 이제 빈 사각형에 'X', 'O', 또는 null인 value prop을 받는다.
+        onClick={() => this.handleClick(i)}        // 컴포넌트는 자신이 정의한 state에만 접근할 수 있으므로 Square에서 Board의 state를 직접 변경할 수 없다.
+      />                                           // 그러므로 Board에서 Square로 함수를 전달하고 Square는 사각형을 클릭할 때 함수를 호출할 것이다.
+    );
   }
 
   render() {
