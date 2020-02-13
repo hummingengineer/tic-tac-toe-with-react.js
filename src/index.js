@@ -18,43 +18,18 @@ function Square(props) {
 // 부모 컴포넌트는 props를 사용하여 자식 컴포넌트에 state를 다시 전달할 수 있고, 이것은 자식 컴포넌트들이 서로 또는 부모 컴포넌트와 동기화 하도록 만든다.
 // 상태 관리를 부모 컴포넌트에서 하도록 한다.
 class Board extends React.Component {
-  // 9개의 사각형에 해당하는 9개의 null 배열을 초기 state로 설정
-  constructor(props) {
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-    };
-  }
-
-  handleClick(i) {
-    const squares = this.state.squares.slice();    // .slice()를 호출하는 것으로 기존 배열을 수정하지 않고 squares 배열의 복사본을 생성하여 수정
-    if (calculateWinner(squares) || squares[i]) return;  // 누군가가 승리하거나 Square가 이미 채워졌다면 Board의 handleClick 함수가 클릭을 무시 
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({
-      squares: squares,
-      xIsNext: !this.state.xIsNext,
-    })
-  }
-
   renderSquare(i) {
     return (                                       // Board 컴포넌트에서 Square 컴포넌트로 value prop을 전달.
       <Square
-        value={this.state.squares[i]}              // Square는 이제 빈 사각형에 'X', 'O', 또는 null인 value prop을 받는다.
-        onClick={() => this.handleClick(i)}        // 컴포넌트는 자신이 정의한 state에만 접근할 수 있으므로 Square에서 Board의 state를 직접 변경할 수 없다.
-      />                                           // 그러므로 Board에서 Square로 함수를 전달하고 Square는 사각형을 클릭할 때 함수를 호출할 것이다.
+        value={this.props.squares[i]}
+        onClick={() => this.props.onClick(i)}      // 각 Square의 위치를 onClick 핸들러에게 넘겨주어 어떤 Square를 클릭했는지 표시
+      />
     );
   }
 
   render() {
-    const winner = calculateWinner(this.state.squares);  // 어떤 플레이어가 우승했는지 확인
-    let status;
-    if (winner) status = 'Winner: ' + winner;
-    else status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
-
     return (
       <div>
-        <div className="status">{status}</div>
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -76,15 +51,52 @@ class Board extends React.Component {
 }
 
 // Game 컴포넌트는 게임판을 렌더링하며, 나중에 수정할 자리 표시자 값을 가지고 있다.
+// Game 컴포넌트는 Board의 데이터를 완벽히 제어할 수 있으며 history에 저장된 과거의 차례를 Board가 렌더링 할 수 있게 만든다.
 class Game extends React.Component {
+  // 초기 state 설정
+  constructor(props) {
+    super(props);
+    this.state = {
+      history: [{
+        squares: Array(9).fill(null),
+      }],
+      xIsNext: true,
+    }
+  }
+
+  handleClick(i) {
+    const history = this.state.history;
+    const current = history[history.length - 1];
+    const squares = current.squares.slice();  // .slice()를 호출하는 것으로 기존 배열을 수정하지 않고 squares 배열의 복사본을 생성하여 수정
+    if (calculateWinner(squares) || squares[i]) return;  // // 누군가가 승리하거나 Square가 이미 채워졌다면 Board의 handleClick 함수가 클릭을 무시
+    squares[i] = this.state.xIsNext ? 'X' : 'O';
+    this.setState({
+      history: history.concat([{
+        squares: squares,
+      }]),
+      xIsNext: !this.state.xIsNext,
+    });
+  }
+
   render() {
+    const history = this.state.history;
+    const current = history[history.length - 1];
+    const winner = calculateWinner(current.squares);
+
+    let status;
+    if (winner) status = 'Winner: ' + winner;
+    else status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+
     return (
       <div className="game">
         <div className="game-board">
-          <Board />
+          <Board
+            squares={current.squares}
+            onClick={(i) => this.handleClick(i)}
+          />
         </div>
         <div className="game-info">
-          <div>{/* status */}</div>
+          <div>{status}</div>
           <ol>{/* TODO */}</ol>
         </div>
       </div>
