@@ -29,6 +29,7 @@ class Board extends React.Component {
 
   handleClick(i) {
     const squares = this.state.squares.slice();    // .slice()를 호출하는 것으로 기존 배열을 수정하지 않고 squares 배열의 복사본을 생성하여 수정
+    if (calculateWinner(squares) || squares[i]) return;  // 누군가가 승리하거나 Square가 이미 채워졌다면 Board의 handleClick 함수가 클릭을 무시 
     squares[i] = this.state.xIsNext ? 'X' : 'O';
     this.setState({
       squares: squares,
@@ -46,7 +47,10 @@ class Board extends React.Component {
   }
 
   render() {
-    const status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+    const winner = calculateWinner(this.state.squares);  // 어떤 플레이어가 우승했는지 확인
+    let status;
+    if (winner) status = 'Winner: ' + winner;
+    else status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
     return (
       <div>
@@ -94,3 +98,24 @@ ReactDOM.render(
   <Game />,
   document.getElementById('root')
 );
+
+// 9개의 사각형의 배열을 가지고 함수는 승자를 확인하여 적절한 값으로 'X', 'O', 또는 null을 반환
+function calculateWinner(squares) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    }
+  }
+  return null;
+}
