@@ -60,8 +60,9 @@ class Game extends React.Component {
       history: [{
         squares: Array(9).fill(null),
       }],
+      stepNumber: 0,
       xIsNext: true,
-    }
+    };
   }
 
   handleClick(i) {
@@ -75,6 +76,13 @@ class Game extends React.Component {
         squares: squares,
       }]),
       xIsNext: !this.state.xIsNext,
+    });
+  }
+
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,                        // stepNumber state는 현재 사용자에게 표시되는 이동을 반영
+      xIsNext: (step % 2) === 0,               // stepNumber가 짝수일 때 마다 xIsNext를 true로 설정
     });
   }
 
