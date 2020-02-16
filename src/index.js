@@ -60,21 +60,22 @@ class Game extends React.Component {
       history: [{
         squares: Array(9).fill(null),
       }],
-      stepNumber: 0,
+      stepNumber: 0,                        // stepNumber state는 현재 사용자에게 표시되는 이동을 반영
       xIsNext: true,
     };
   }
 
   handleClick(i) {
-    const history = this.state.history;
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);  // “시간을 거슬러 올라가고” 그 시점에서 새로운 이동을 발생한다면 이제는 맞지 않게 된 모든 “미래”의 기록을 날려버린다.
     const current = history[history.length - 1];
-    const squares = current.squares.slice();  // .slice()를 호출하는 것으로 기존 배열을 수정하지 않고 squares 배열의 복사본을 생성하여 수정
-    if (calculateWinner(squares) || squares[i]) return;  // // 누군가가 승리하거나 Square가 이미 채워졌다면 Board의 handleClick 함수가 클릭을 무시
+    const squares = current.squares.slice();             // .slice()를 호출하는 것으로 기존 배열을 수정하지 않고 squares 배열의 복사본을 생성하여 수정
+    if (calculateWinner(squares) || squares[i]) return;  // 누군가가 승리하거나 Square가 이미 채워졌다면 Board의 handleClick 함수가 클릭을 무시
     squares[i] = this.state.xIsNext ? 'X' : 'O';
     this.setState({
       history: history.concat([{
-        squares: squares,
+        squares: squares
       }]),
+      stepNumber: history.length,                        // 새로운 이동을 만든 후에 this.setState의 인자로 stepNumber: history.length를 추가하여 stepNumber를 업데이트 해야한다. 이를 통해 새로운 이동이 생성된 후에 이동이 그대로 남아있는 것을 방지하게 된다.
       xIsNext: !this.state.xIsNext,
     });
   }
